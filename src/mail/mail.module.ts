@@ -11,8 +11,8 @@ import { join } from 'path';
         port: 587,
         secure: false,
         auth: {
-          user: 'synthwaveblues@gmail.com',
-          pass: 'bmza gcrj fakh ikbh ',
+          user: 'user email',
+          pass: 'password ',
         },
       },
       defaults: {
