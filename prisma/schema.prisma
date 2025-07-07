@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email String @unique
+  hash String
+
+  firstName String?
+  lastName String?
+
+  reports     Report[]
+  listings      Listing[]
+  messagesSent  Message[] @relation("MessagesSent")
+  messagesRecv  Message[] @relation("MessagesRecv")
+  comments      Comment[]
+  favorites     Favorite[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Listing {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  price       Float
+  location    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  comments  Comment[]
+  favorites Favorite[]
+  reports   Report[]
+
+  @@map("listings")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+
+  listingId Int
+  userId    Int
+
+  listing Listing @relation(fields: [listingId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@map("comments")
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+
+  senderId   Int
+  receiverId Int
+
+  sender   User @relation("MessagesSent", fields: [senderId], references: [id])
+  receiver User @relation("MessagesRecv", fields: [receiverId], references: [id])
+
+  @@map("messages")
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  listingId Int
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  listing Listing @relation(fields: [listingId], references: [id])
+
+  @@unique([userId, listingId])
+  @@map("favorites")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  listings Listing[]
+
+  @@map("categories")
+}
+
+model Report {
+  id        Int      @id @default(autoincrement())
+  reason    String
+  createdAt DateTime @default(now())
+
+  listingId Int
+  userId    Int
+
+  listing Listing @relation(fields: [listingId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@map("reports")
+}
